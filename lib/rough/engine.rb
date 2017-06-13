@@ -7,7 +7,7 @@ module Rough
   class Engine < Rails::Engine
 
     initializer 'rough_engine.middleware' do |app|
-      app.middleware.insert_after ActionDispatch::ParamsParser, Rough::Middleware
+      app.middleware.insert_after ActionDispatch::Flash, Rough::Middleware
     end
 
   end

@@ -9,8 +9,9 @@ Gem::Specification.new do |gem|
   gem.summary       = 'protobuf APIs'
   gem.homepage      = 'https://rubygems.org/gems/rough'
 
-  gem.add_dependency 'rails', '~> 4.1'
-  gem.add_dependency 'protobuf', '>= 3.4'
+  gem.add_dependency 'rails', '~> 5.1'
+  gem.add_dependency 'google-protobuf', '~> 3.3'
+  gem.add_dependency 'grpc', '~> 1.3'
 
   gem.add_development_dependency 'actionpack', '~> 4.1'
   gem.add_development_dependency 'rspec', '~> 3'

@@ -7,25 +7,24 @@ module Rough
   module BaseController
 
     PROTO_MIME = Mime::Type.new('application/x-protobuf')
+    JSON_MIME = Mime::Type.new('application/json')
 
     def self.included(base)
       base.class_eval do
         before_action :log_proto, if: :rpc?
-        alias_method_chain :params, :request_proto
       end
     end
 
-    def render(options = {})
-      return if performed?
+    def default_render(*args)
       if rpc?
         if request.accept == PROTO_MIME || request.content_type == PROTO_MIME
           response.headers['Content-Type'] = PROTO_MIME.to_s
-          super text: response_proto.encode, status: options[:status]
+          render body: RpcRegistry.response_class_for(rpc_name).send(RpcRegistry.marshall_method_for(rpc_name), response_proto)
         else
-          super json: response_proto.to_json, status: options[:status]
+          render json: RpcRegistry.response_class_for(rpc_name).encode_json(response_proto)
         end
       else
-        super
+        super(*args)
       end
     end
 
@@ -33,11 +32,11 @@ module Rough
       return nil unless rpc?
       @request_proto ||=
         if request.content_type == PROTO_MIME
-          RpcRegistry.request_class_for(rpc_name).decode(request.body.read)
-        else
-          RpcRegistry.request_class_for(rpc_name).new(params_without_request_proto)
+          RpcRegistry.request_class_for(rpc_name).send(RpcRegistry.unmarshall_method_for(rpc_name), request.body.read)
+        elsif request.content_type == JSON_MIME
+          RpcRegistry.request_class_for(rpc_name).decode_json(request.body.read)
         end
-    rescue TypeError => e
+    rescue Google::Protobuf::ParseError => e
       raise InvalidRequestProto, e
     end
 
@@ -48,14 +47,6 @@ module Rough
 
     private
 
-    def params_with_request_proto
-      if rpc?
-        ActionController::Parameters.new(request_proto.to_hash)
-      else
-        params_without_request_proto
-      end
-    end
-
     def rpc?
       rpc_name
     end
@@ -65,7 +56,7 @@ module Rough
     end
 
     def rpc_name
-      params_without_request_proto[:rpc]
+      params[:rpc]
     end
 
   end
