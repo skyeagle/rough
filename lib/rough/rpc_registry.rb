@@ -31,9 +31,9 @@ module Rough
         service_name, method_name = rpc_name.split('#')
 
         service_class = service_name.constantize
-        fail 'not a service class' unless service_class.include?(GRPC::GenericService)
+        fail 'not a service class' unless service_class::Service.include?(GRPC::GenericService)
 
-        rpc_desc = service_class.rpc_descs[method_name.to_sym]
+        rpc_desc = service_class::Service.rpc_descs[method_name.to_sym]
         fail 'no corresponding rpc descriptor' unless rpc_desc
 
         methods[rpc_name] = rpc_desc
