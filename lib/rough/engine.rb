@@ -1,5 +1,6 @@
 require_relative 'middleware'
 require_relative 'base_controller'
+require_relative 'actiondispatch_routing_ext'
 require 'rails/engine'
 
 module Rough
