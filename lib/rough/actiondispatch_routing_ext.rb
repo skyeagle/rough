@@ -14,7 +14,7 @@ module ActionDispatch
         raise 'service is not a grpc service class' unless service::Service.include?(GRPC::GenericService)
         raise 'service does contain a #{rpc} rpc' unless service::Service.rpc_descs.include?(rpc)
 
-        path = options.delete(:path) || "#{service.to_s.gsub('::', '.')}/#{rpc.to_s}"
+        path = options.delete(:path) || "#{service::Service.service_name}/#{rpc.to_s}"
 
         post path, options.merge(rpc: "#{service.to_s}##{rpc.to_s}", to: action)
       end
