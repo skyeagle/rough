@@ -2,13 +2,6 @@ require 'spec_helper'
 
 describe Rough::RpcRegistry do
 
-  class ListRequest;  end
-  class ListResponse; end
-
-  class JohnService < Protobuf::Rpc::Service
-    rpc :list, ListRequest, ListResponse
-  end
-
   shared_examples 'rpc_lookup' do
 
     context 'when the service class does not exist' do
@@ -35,27 +28,27 @@ describe Rough::RpcRegistry do
 
       context 'and the method struct does not exist on the service' do
 
-        let(:rpc_name) { 'JohnService#fake' }
+        let(:rpc_name) { 'Greeter#say_bye' }
 
         it 'should raise a RuntimeError' do
-          expect { subject }.to raise_error(RuntimeError, 'not a valid rpc')
+          expect { subject }.to raise_error(RuntimeError, 'no corresponding rpc descriptor')
         end
 
       end
 
       context 'and the method struct exists on the service' do
 
-        let(:rpc_name) { 'JohnService#list' }
+        let(:rpc_name) { 'Greeter#say_hello' }
 
         it 'should return the proper method struct' do
-          expect(subject).to eq(request ? ListRequest : ListResponse)
+          expect(subject).to eq(request ? Greeter::Request : Greeter::Response)
         end
 
         context 'when accessing a second time' do
 
           it 'should use a cached copy' do
-            expect(JohnService).not_to receive(:<)
-            expect(subject).to eq(request ? ListRequest : ListResponse)
+            expect(subject).to eq(request ? Greeter::Request : Greeter::Response)
+            expect(Rough::RpcRegistry.send(:methods)).to have_key("Greeter#say_hello")
           end
 
         end
